@@ -1,6 +1,6 @@
 require 'httparty'
 require_relative 'request'
-require_relative '../service_discovery/service'
+require_relative 'service'
 module LoadBalancer
   class Balancer
     attr_accessor :service, :request
@@ -26,8 +26,10 @@ module LoadBalancer
 
     def parse(response)
       JSON.parse(response).collect do |s|
-        ServiceDiscovery::Service.new(s['name'], s['weight'], s['host'], s['port'], s['service_load'])
+        Service.new(s['name'], s['weight'], s['host'], s['port'], s['service_load'])
       end
     end
   end
 end
+
+

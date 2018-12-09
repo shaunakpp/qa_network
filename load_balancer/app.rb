@@ -6,9 +6,7 @@ require_relative 'balancer'
 module LoadBalancer
   class Application < Sinatra::Base
     register Sinatra::Soap
-
     set :wsdl_route, '/wsdl'
-
 
     soap 'call', in: { service: :string, service_params: {} }, out: nil do
       balancer = Balancer.new(Request.new(params['service']))
@@ -18,14 +16,13 @@ module LoadBalancer
     end
 
     get '/' do
+      "You've reached the Load Balancer. User /rest for RESTful requests, and /call for SOAP requests"
+    end
+
+    get '/rest' do
       balancer = Balancer.new(Request.new(params['service']))
       service = balancer.calculate_load
       AaramWorker.perform_async(service.to_json, params['service_params'])
-      'ACK'
-    end
-
-    get '/soap' do
-      SabunWorker.perform_async(params)
       'ACK'
     end
 
