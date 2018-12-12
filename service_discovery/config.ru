@@ -1,7 +1,6 @@
 require 'rack/cors'
 require_relative '../init'
 require_relative 'app'
-require_relative 'registry'
 use Rack::Cors do
   allow do
     origins '*'

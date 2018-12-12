@@ -1,8 +1,7 @@
 require 'sinatra'
 require 'sinatra/contrib'
 require 'sinatra/soap'
-require_relative 'registry'
-
+require_relative 'service'
 module ServiceDiscovery
   class Application < Sinatra::Base
     register Sinatra::Soap
@@ -18,15 +17,28 @@ module ServiceDiscovery
     end
 
     get '/services' do
-      Registry.new.services.to_json
+      ServiceDiscovery::Service.all.collect { |x| x.attributes.merge(x.to_hash) }.to_json
     end
 
     get '/service' do
-      Registry.new.find_all(params['service']).to_json
+      ServiceDiscovery::Service.find(name: params['service']).collect { |x| x.attributes.merge(x.to_hash) }.to_json
     end
 
     get '/find' do
-      Registry.new.find(params['service_id']).to_json
+      service = ServiceDiscovery::Service[params['service_id']]
+      if service.nil?
+        status 404
+        "Service with id: #{params['service_id']} Not found"
+      else
+        service.attributes.merge(service.to_hash).to_json
+      end
+    end
+
+    post '/service' do
+      service = Service.find(name: params['name'], host: params['host'], port: params['port']).first
+      service = Service.create(params) if service.nil?
+      service.update(expiry: 30)
+      service.attributes.merge(service.to_hash).to_json
     end
   end
 end
