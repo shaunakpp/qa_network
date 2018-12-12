@@ -7,6 +7,7 @@ module LoadBalancer
     include Sidekiq::Worker
     def perform(service, params)
       service = JSON.parse(service)
+      params["callback_url"] = "http://localhost:9292/callback"
       query = QueryParams.encode(params)
       res = HTTParty.get("#{service['host']}:#{service['port']}/?#{query}")
       # TODO: send response to callback URL of client

@@ -26,7 +26,7 @@ module LoadBalancer
 
     def parse(response)
       JSON.parse(response).collect do |s|
-        Service.new(s['name'], s['weight'], s['host'], s['port'], s['service_load'])
+        Service.new(s['name'], s['weight'].to_i, s['host'], s['port'].to_i, s['service_load'].to_i)
       end
     end
   end

@@ -40,5 +40,17 @@ module ServiceDiscovery
       service.update(expiry: 30)
       service.attributes.merge(service.to_hash).to_json
     end
+
+    delete '/service' do
+      service = Service.find(name: params['name'], host: params['host'], port: params['port']).first
+      if service.nil?
+        status 404
+        'Service not found'
+      else
+        id = service.id
+        service.delete
+        "Service with id #{id} deleted"
+      end
+    end
   end
 end
