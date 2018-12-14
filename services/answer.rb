@@ -2,18 +2,21 @@ Kernel.at_exit {
   response = HTTParty.delete('http://localhost:4567/service', body: { name: 'answer', host: 'http://localhost', port: 3002 })
   puts response.body
 }
-require 'sinatra'
+require 'sinatra/base'
 require 'sinatra/contrib'
 require 'httparty'
 module Service
   class Answer < Sinatra::Base
     configure do
+      set :bind, '0.0.0.0'
       set :app_file, __FILE__
+      set :run, false
       set :port, 3002
+      enable :logging
     end
 
     get '/' do
-      "Received params: #{params} for Answer"
+      p "Received params: #{params} for Answer"
     end
 
     get '/healthcheck' do
