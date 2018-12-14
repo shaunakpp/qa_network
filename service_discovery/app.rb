@@ -1,10 +1,18 @@
-require 'sinatra'
+require 'sinatra/base'
 require 'sinatra/contrib'
 require 'sinatra/soap'
 require_relative 'service'
 module ServiceDiscovery
   class Application < Sinatra::Base
     register Sinatra::Soap
+    configure do
+      set :bind, '0.0.0.0'
+      set :app_file, __FILE__
+      set :run, false
+      set :port, 4567
+      enable :logging
+    end
+
 
     set :wsdl_route, '/wsdl'
 
@@ -52,5 +60,7 @@ module ServiceDiscovery
         "Service with id #{id} deleted"
       end
     end
+
+    run! if app_file == $PROGRAM_NAME
   end
 end
