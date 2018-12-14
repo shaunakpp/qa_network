@@ -2,16 +2,15 @@ require 'httparty'
 require 'queryparams'
 require 'savon'
 require 'pry'
+require 'sidekiq'
 module LoadBalancer
   class AaramWorker
     include Sidekiq::Worker
     def perform(service, params)
       service = JSON.parse(service)
-      params["callback_url"] = "http://localhost:9292/callback"
       query = QueryParams.encode(params)
       res = HTTParty.get("#{service['host']}:#{service['port']}/?#{query}")
-      # TODO: send response to callback URL of client
-      puts "body: #{res.body} code: #{res.code} message: #{res.message}"
+      {code: res.code, body: res.body, message: res.message}
     end
   end
 
@@ -19,9 +18,8 @@ module LoadBalancer
     include Sidekiq::Worker
     def perform(service, params)
       service = JSON.parse(service)
-      client = Savon.client(wsdl: "#{service['host']}:#{service['port']}?wsdl")
-      res = client.call(params['operation'].to_sym, message: params)
-      puts "body: #{res.body}"
+      client = Savon.client(wsdl: "#{service['host']}:#{service['port']}/wsdl")
+      client.call(params['service'].to_sym, message: params['service_params'])
     end
   end
 end
