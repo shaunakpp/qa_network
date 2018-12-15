@@ -6,10 +6,12 @@ require 'sidekiq'
 module LoadBalancer
   class AaramWorker
     include Sidekiq::Worker
-    def perform(service, params)
+    def perform(service, params, operation=nil)
       service = JSON.parse(service)
       query = QueryParams.encode(params)
-      res = HTTParty.get("#{service['host']}:#{service['port']}/?#{query}")
+      puts "Picked service: #{service}, for operation: #{operation} with query: #{params}"
+      res = HTTParty.get("#{service['host']}:#{service['port']}/#{operation}?#{query}")
+      puts "Received response: code:#{res.code}, body: #{res.body}, message: #{res.message}"
       {code: res.code, body: res.body, message: res.message}
     end
   end

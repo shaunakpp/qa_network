@@ -10,10 +10,10 @@
   <tbody>
     <% @questions.each do |question| %>
       <tr>
-        <td><a href="/questions/<%=question['qid']%>"><%= question["qid"] %></a></td>
-        <td><a href="/questions/<%=question['qid']%>"><%= question["description"] %></a></td>
+        <td><a href="/questions/<%=question['id']%>"><%= question["id"] %></a></td>
+        <td><a href="/questions/<%=question['id']%>"><%= question["description"] %></a></td>
         <td>
-          <a href="/questions/<%=question['qid']%>/answers" target="_blank">View Answers</a>
+          <a href="/questions/<%=question['id']%>/answers">View Answers</a>
         </td>
       </tr>
     <% end %>

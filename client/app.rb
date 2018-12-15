@@ -17,18 +17,18 @@ module Client
       redirect '/questions'
     end
 
-    get '/questions/new' do
-      erb :layout, layout: false do
-        erb :'questions/new'
-      end
-    end
-
-
     get '/questions' do
       resp = HTTParty.get("#{@balancer['host']}:#{@balancer['port']}/rest?service=question&operation=get_questions")
       @questions = JSON.parse(resp.body)
       erb :layout, layout: false do
         erb :'questions/index'
+      end
+    end
+
+
+    get '/questions/new' do
+      erb :layout, layout: false do
+        erb :'questions/new'
       end
     end
 
@@ -46,7 +46,7 @@ module Client
     end
 
     post '/questions' do
-      resp = HTTParty.get("#{@balancer['host']}:#{@balancer['port']}/rest?service=question&operation=post_question&service_params[question]=#{params[:description]}")
+      resp = HTTParty.get("#{@balancer['host']}:#{@balancer['port']}/rest?service=question&operation=post_question&service_params[description]=#{params[:description]}")
       resp.body
       redirect '/questions'
     end
@@ -74,7 +74,7 @@ module Client
     end
 
     post '/questions/:question_id/answers' do
-      resp = HTTParty.get("#{@balancer['host']}:#{@balancer['port']}/rest?service=answer&operation=post_answer&service_params[answer]=#{params['description']}&service_params[question_id]=#{params['question_id']}")
+      resp = HTTParty.get("#{@balancer['host']}:#{@balancer['port']}/rest?service=answer&operation=post_answer&service_params[description]=#{params['description']}&service_params[question_id]=#{params['question_id']}")
       resp.body
       redirect "/questions/#{params[:question_id]}/answers"
     end
