@@ -7,6 +7,7 @@ require 'sinatra/contrib'
 require 'sinatra/soap'
 require 'httparty'
 require 'pry'
+require_relative '../utils/system_load_metrics'
 require_relative 'model'
 module Service
   class Answer < Sinatra::Base
@@ -61,11 +62,11 @@ module Service
     end
 
     get '/healthcheck' do
-      '300'
+      SystemLoadMetrics.average_load
     end
 
     def self.notify_service_and_run!
-      HTTParty.post('http://localhost:4567/service', body: { name: 'answer', host: 'http://localhost', port: 3002, service_load: 220, weight: 1 })
+      HTTParty.post('http://localhost:4567/service', body: { name: 'answer', host: 'http://localhost', port: 3002, service_load: SystemLoadMetrics.average_load, weight: 1 })
       run!
     end
     notify_service_and_run! if app_file == $PROGRAM_NAME

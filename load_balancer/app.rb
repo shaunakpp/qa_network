@@ -7,6 +7,8 @@ require 'sinatra/contrib'
 require 'sinatra/soap'
 require_relative 'worker'
 require_relative 'balancer'
+require_relative '../utils/system_load_metrics'
+
 module LoadBalancer
   class Application < Sinatra::Base
     register Sinatra::Soap
@@ -41,7 +43,7 @@ module LoadBalancer
     end
 
     def self.notify_service_and_run!
-      HTTParty.post('http://localhost:4567/service', body: { name: 'load_balancer', host: 'http://localhost', port: settings.port, service_load: 1, weight: 1 })
+      HTTParty.post('http://localhost:4567/service', body: { name: 'load_balancer', host: 'http://localhost', port: settings.port, service_load: SystemLoadMetrics.average_load, weight: 1 })
       run!
     end
     notify_service_and_run! if app_file == $PROGRAM_NAME
