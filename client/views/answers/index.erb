@@ -1,0 +1,32 @@
+<table class="responsive-table highlight">
+  <thead>
+    <tr>
+      <th>Id</th>
+      <th>Question ID</th>
+      <th>Answer</th>
+      <th>Actions</th>
+    </tr>
+  </thead>
+
+  <tbody>
+    <% @answers.each do |answer| %>
+      <tr>
+        <td><%= answer["aid"] %></td>
+        <td><%= answer["qid"] %></td>
+        <td><%= answer["description"] %></td>
+        <td>
+
+        </td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>
+<br/>
+<div class="row">
+  <div class="col s6">
+    <a href="/questions/<%= params[:question_id] %>/answers/new" class="waves-effect waves-light btn">Create New Answer</a>
+  </div>
+  <div class="col s6">
+    <a href="/questions" class="waves-effect waves-light btn right"> Back to questions</a>
+  </div>
+</div>
