@@ -4,6 +4,7 @@ Kernel.at_exit {
 }
 require 'sinatra/base'
 require 'sinatra/contrib'
+require 'sinatra/soap'
 require 'httparty'
 require 'pry'
 require_relative 'model'
@@ -15,6 +16,25 @@ module Service
       set :run, false
       set :port, 3002
       enable :logging
+    end
+
+    register Sinatra::Soap
+    set :service, 'answer'
+    set :namespace, 'http://schemas.xmlsoap.org/wsdl/'
+    set :endpoint, '/action'
+    set :wsdl_route, '/wsdl'
+
+    soap '/get_answers', in: nil, out: { answers: :string } do
+      AnswerStore.all.to_a.collect(&:ui_json).to_json
+    end
+
+    soap '/get_answer_for_question', in: { question_id: :string }, out: {answers: :string } do
+      AnswerStore.find(question_id: params['question_id'].to_i).collect(&:ui_json).to_json
+    end
+
+    soap '/post_answer', in: {description: :string}, out: {answer: :string} do
+      @answer = AnswerStore.new(description: params['description'], question_id: params['question_id'])
+      @answer.save
     end
 
     get '/' do
@@ -37,7 +57,7 @@ module Service
     get '/post_answer' do
       @answer = AnswerStore.new(description: params['description'], question_id: params['question_id'])
       @answer.save
-      [200, { 'Content-Type' => 'Application/JSON' }, @question]
+      @answer.attributes.merge(@answer.to_hash).to_json
     end
 
     get '/healthcheck' do

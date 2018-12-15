@@ -10,7 +10,7 @@ require_relative 'balancer'
 module LoadBalancer
   class Application < Sinatra::Base
     register Sinatra::Soap
-    set :service, 'sinatra'
+    set :service, 'load_balancer'
     set :namespace, 'http://schemas.xmlsoap.org/wsdl/'
     set :endpoint, '/action'
     set :wsdl_route, '/wsdl'

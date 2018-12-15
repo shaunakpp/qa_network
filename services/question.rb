@@ -21,8 +21,17 @@ module Service
       enable :logging
     end
 
-    soap 'question', in: { question: :string }, out: { question_id: :string } do
-      'FAKE_QUESTION_ID'
+    soap '/get_question', in: { question_id: :string }, out: { question: :string } do
+      @question = QuestionStore[params['question_id'].to_i]
+      @question.ui_json.to_json
+    end
+
+    soap '/get_questions', in: nil, out: {questions: :string} do
+    end
+
+    soap '/post_question', in: {description: :string}, out: {question: :string} do
+      @question = QuestionStore.new(description: params['description'])
+      @question.save
     end
 
     get '/' do
@@ -41,7 +50,7 @@ module Service
     get '/post_question' do
       @question = QuestionStore.new(description: params['description'])
       @question.save
-      [200, { 'Content-Type' => 'Application/JSON' }, @question]
+      @question.attributes.merge(@question.to_hash).to_json
     end
 
     get '/healthcheck' do
