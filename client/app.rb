@@ -10,6 +10,7 @@ module Client
     end
 
     before do
+      @service_discovery = service_discovery
       @balancer = load_balancer
     end
 
@@ -79,8 +80,22 @@ module Client
       redirect "/questions/#{params[:question_id]}/answers"
     end
 
+    def service_discovery
+      registries = ['http://localhost:4567','http://localhost:4568']
+      registries.each do |registry|
+        break(registry) if service_discovery_working?(registry)
+      end
+    end
+
+    def service_discovery_working?(registry)
+      HTTParty.get(registry)
+      true
+    rescue Errno::ECONNREFUSED
+      false
+    end
+
     def load_balancer
-      resp = HTTParty.get('http://localhost:4567/service?service=load_balancer')
+      resp = HTTParty.get("#{@service_discovery}/service?service=load_balancer")
       balancers = JSON.parse(resp.body)
       balancers.each do |balancer|
         break(balancer) if balancer_working?(balancer)

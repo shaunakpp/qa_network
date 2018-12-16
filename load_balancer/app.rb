@@ -1,5 +1,6 @@
 Kernel.at_exit do
-  response = HTTParty.delete('http://localhost:4567/service', body: { name: 'load_balancer', host: 'http://localhost', port: LoadBalancer::Application.settings.port })
+  registry = LoadBalancer::Application.service_discovery
+  response = HTTParty.delete("#{registry}/service", body: { name: 'load_balancer', host: LoadBalancer::Application.settings.host, port: LoadBalancer::Application.settings.port })
   puts response.body
 end
 require 'sinatra/base'
@@ -16,7 +17,7 @@ module LoadBalancer
     set :namespace, 'http://schemas.xmlsoap.org/wsdl/'
     set :endpoint, '/action'
     set :wsdl_route, '/wsdl'
-
+    set :host, ENV['HOST'] || 'http://localhost'
     configure do
       set :bind, '0.0.0.0'
       set :run, false
@@ -42,8 +43,23 @@ module LoadBalancer
       [200, { 'Content-Type' => 'Application/JSON' }, res[:body]]
     end
 
+    def self.service_discovery
+      registries = ['http://localhost:4567', 'http://localhost:4568']
+      registries.each do |registry|
+        break(registry) if service_discovery_working?(registry)
+      end
+    end
+
+    def self.service_discovery_working?(registry)
+      HTTParty.get(registry)
+      true
+    rescue Errno::ECONNREFUSED
+      false
+    end
+
     def self.notify_service_and_run!
-      HTTParty.post('http://localhost:4567/service', body: { name: 'load_balancer', host: 'http://localhost', port: settings.port, service_load: SystemLoadMetrics.average_load, weight: 1 })
+      registry = service_discovery
+      HTTParty.post("#{registry}/service", body: { name: 'load_balancer', host: settings.host, port: settings.port, service_load: SystemLoadMetrics.average_load, weight: 1 })
       run!
     end
     notify_service_and_run! if app_file == $PROGRAM_NAME

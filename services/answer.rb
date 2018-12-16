@@ -1,6 +1,8 @@
 Kernel.at_exit {
-  response = HTTParty.delete('http://localhost:4567/service', body: { name: 'answer', host: 'http://localhost', port: 3002 })
+  registry = Service::Answer.service_discovery
+  response = HTTParty.delete("#{registry}/service", body: { name: 'answer', host: Service::Answer.settings.host, port: Service::Answer.settings.port })
   puts response.body
+  Service::Answer.quit!
 }
 require 'sinatra/base'
 require 'sinatra/contrib'
@@ -15,7 +17,7 @@ module Service
       set :bind, '0.0.0.0'
       set :app_file, __FILE__
       set :run, false
-      set :port, 3002
+      set :port, ENV['PORT'] || 3002
       enable :logging
     end
 
@@ -24,6 +26,7 @@ module Service
     set :namespace, 'http://schemas.xmlsoap.org/wsdl/'
     set :endpoint, '/action'
     set :wsdl_route, '/wsdl'
+    set :host, ENV['HOST'] || 'http://localhost'
 
     soap '/get_answers', in: nil, out: { answers: :string } do
       AnswerStore.all.to_a.collect(&:ui_json).to_json
@@ -65,8 +68,23 @@ module Service
       SystemLoadMetrics.average_load
     end
 
+    def self.service_discovery
+      registries = ['http://localhost:4567','http://localhost:4568']
+      registries.each do |registry|
+        break(registry) if service_discovery_working?(registry)
+      end
+    end
+
+    def self.service_discovery_working?(registry)
+      HTTParty.get(registry)
+      true
+    rescue Errno::ECONNREFUSED
+      false
+    end
+
     def self.notify_service_and_run!
-      HTTParty.post('http://localhost:4567/service', body: { name: 'answer', host: 'http://localhost', port: 3002, service_load: SystemLoadMetrics.average_load, weight: 1 })
+      registry = service_discovery
+      HTTParty.post("#{registry}/service", body: { name: 'answer', host: settings.host, port: settings.port, service_load: SystemLoadMetrics.average_load, weight: 1 })
       run!
     end
     notify_service_and_run! if app_file == $PROGRAM_NAME

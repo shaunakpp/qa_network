@@ -1,5 +1,6 @@
 Kernel.at_exit do
-  response = HTTParty.delete('http://localhost:4567/service', body: { name: 'question', host: 'http://localhost', port: 3003 })
+  registry = Service::Question.service_discovery
+  response = HTTParty.delete("#{registry}/service", body: { name: 'question', host: Service::Question.settings.host, port: Service::Question.settings.port })
   puts response.body
   Service::Question.quit!
 end
@@ -14,11 +15,17 @@ require_relative 'model'
 module Service
   class Question < Sinatra::Base
     register Sinatra::Soap
+    set :service, 'question'
+    set :namespace, 'http://schemas.xmlsoap.org/wsdl/'
+    set :endpoint, '/action'
+    set :wsdl_route, '/wsdl'
+    set :host, ENV['HOST'] || 'http://localhost'
+
     configure do
       set :bind, '0.0.0.0'
       set :app_file, __FILE__
       set :run, false
-      set :port, ENV['port'] || 3003
+      set :port, ENV['PORT'] || 3003
       enable :logging
     end
 
@@ -58,8 +65,23 @@ module Service
       SystemLoadMetrics.average_load
     end
 
+    def self.service_discovery
+      registries = ['http://localhost:4567','http://localhost:4568']
+      registries.each do |registry|
+        break(registry) if service_discovery_working?(registry)
+      end
+    end
+
+    def self.service_discovery_working?(registry)
+      HTTParty.get(registry)
+      true
+    rescue Errno::ECONNREFUSED
+      false
+    end
+
     def self.notify_service_and_run!
-      HTTParty.post('http://localhost:4567/service', body: { name: 'question', host: 'http://localhost', port: 3003, service_load: SystemLoadMetrics.average_load, weight: 1 })
+      registry = service_discovery
+      HTTParty.post("#{registry}/service", body: { name: 'question', host: settings.host, port: settings.port, service_load: SystemLoadMetrics.average_load, weight: 1 })
       run!
     end
     notify_service_and_run! if app_file == $PROGRAM_NAME

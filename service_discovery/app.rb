@@ -9,7 +9,8 @@ module ServiceDiscovery
       set :bind, '0.0.0.0'
       set :app_file, __FILE__
       set :run, false
-      set :port, 4567
+      set :port, ENV['PORT'] || 4567
+      set :host, ENV['HOST'] || 'http://localhost'
       enable :logging
     end
 
