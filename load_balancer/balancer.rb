@@ -1,8 +1,10 @@
 require 'httparty'
 require_relative 'request'
 require_relative 'service'
+require_relative '../utils/service_discovery_checker'
 module LoadBalancer
   class Balancer
+    extend ServiceDiscoveryChecker
     attr_accessor :service, :request
     def initialize(request)
       @request = request
@@ -13,7 +15,7 @@ module LoadBalancer
     end
 
     def services
-      @services ||= parse(HTTParty.get("http://localhost:4567/service?service=#{request.service}"))
+      @services ||= parse(HTTParty.get("#{self.class.service_discovery}/service?service=#{request.service}"))
     end
 
     private
@@ -21,7 +23,7 @@ module LoadBalancer
     def minimum_load_service
       loads = {}
       services.collect { |s| loads["#{s.host}~#{s.port}"] = s.service_load.to_i * s.weight.to_i }
-      host, port = loads.key(loads.values.min).split("~")
+      host, port = loads.key(loads.values.min).split('~')
       services.find { |s| s.host == host && s.port.to_i == port.to_i }
     end
 
@@ -32,5 +34,3 @@ module LoadBalancer
     end
   end
 end
-
-

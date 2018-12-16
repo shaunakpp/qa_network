@@ -9,9 +9,11 @@ require 'sinatra/soap'
 require_relative 'worker'
 require_relative 'balancer'
 require_relative '../utils/system_load_metrics'
-
+require_relative '../utils/service_discovery_checker'
 module LoadBalancer
   class Application < Sinatra::Base
+    extend ServiceDiscoveryChecker
+
     register Sinatra::Soap
     set :service, 'load_balancer'
     set :namespace, 'http://schemas.xmlsoap.org/wsdl/'
@@ -41,20 +43,6 @@ module LoadBalancer
       service = balancer.calculate_load
       res = AaramWorker.new.perform(service.to_json, params['service_params'], params['operation'])
       [200, { 'Content-Type' => 'Application/JSON' }, res[:body]]
-    end
-
-    def self.service_discovery
-      registries = ['http://localhost:4567', 'http://localhost:4568']
-      registries.each do |registry|
-        break(registry) if service_discovery_working?(registry)
-      end
-    end
-
-    def self.service_discovery_working?(registry)
-      HTTParty.get(registry)
-      true
-    rescue Errno::ECONNREFUSED
-      false
     end
 
     def self.notify_service_and_run!

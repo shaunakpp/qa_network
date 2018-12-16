@@ -2,15 +2,18 @@ require 'sinatra/base'
 require 'sinatra/contrib'
 require 'httparty'
 require 'pry'
+require_relative '../utils/service_discovery_checker'
 module Client
   class Application < Sinatra::Base
+    extend ServiceDiscoveryChecker
+
     configure do
       set :port, 3000
       enable :logging
     end
 
     before do
-      @service_discovery = service_discovery
+      @service_discovery = self.class.service_discovery
       @balancer = load_balancer
     end
 
@@ -26,7 +29,6 @@ module Client
       end
     end
 
-
     get '/questions/new' do
       erb :layout, layout: false do
         erb :'questions/new'
@@ -35,11 +37,11 @@ module Client
 
     get '/questions/:id' do
       resp = HTTParty.get("#{@balancer['host']}:#{@balancer['port']}/rest?service=question&operation=get_question&service_params[question_id]=#{params[:id]}")
-      if resp.body.empty?
-        @question = {}
-      else
-        @question = JSON.parse(resp.body)
-      end
+      @question = if resp.body.empty?
+                    {}
+                  else
+                    JSON.parse(resp.body)
+                  end
 
       erb :layout, layout: false do
         erb :'questions/show'
@@ -78,20 +80,6 @@ module Client
       resp = HTTParty.get("#{@balancer['host']}:#{@balancer['port']}/rest?service=answer&operation=post_answer&service_params[description]=#{params['description']}&service_params[question_id]=#{params['question_id']}")
       resp.body
       redirect "/questions/#{params[:question_id]}/answers"
-    end
-
-    def service_discovery
-      registries = ['http://localhost:4567','http://localhost:4568']
-      registries.each do |registry|
-        break(registry) if service_discovery_working?(registry)
-      end
-    end
-
-    def service_discovery_working?(registry)
-      HTTParty.get(registry)
-      true
-    rescue Errno::ECONNREFUSED
-      false
     end
 
     def load_balancer

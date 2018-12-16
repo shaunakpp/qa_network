@@ -1,18 +1,20 @@
-Kernel.at_exit {
+Kernel.at_exit do
   registry = Service::Answer.service_discovery
   response = HTTParty.delete("#{registry}/service", body: { name: 'answer', host: Service::Answer.settings.host, port: Service::Answer.settings.port })
   puts response.body
   Service::Answer.quit!
-}
+end
 require 'sinatra/base'
 require 'sinatra/contrib'
 require 'sinatra/soap'
 require 'httparty'
 require 'pry'
 require_relative '../utils/system_load_metrics'
+require_relative '../utils/service_discovery_checker'
 require_relative 'model'
 module Service
   class Answer < Sinatra::Base
+    extend ServiceDiscoveryChecker
     configure do
       set :bind, '0.0.0.0'
       set :app_file, __FILE__
@@ -32,11 +34,11 @@ module Service
       AnswerStore.all.to_a.collect(&:ui_json).to_json
     end
 
-    soap '/get_answer_for_question', in: { question_id: :string }, out: {answers: :string } do
+    soap '/get_answer_for_question', in: { question_id: :string }, out: { answers: :string } do
       AnswerStore.find(question_id: params['question_id'].to_i).collect(&:ui_json).to_json
     end
 
-    soap '/post_answer', in: {description: :string}, out: {answer: :string} do
+    soap '/post_answer', in: { description: :string }, out: { answer: :string } do
       @answer = AnswerStore.new(description: params['description'], question_id: params['question_id'])
       @answer.save
     end
@@ -66,20 +68,6 @@ module Service
 
     get '/healthcheck' do
       SystemLoadMetrics.average_load
-    end
-
-    def self.service_discovery
-      registries = ['http://localhost:4567','http://localhost:4568']
-      registries.each do |registry|
-        break(registry) if service_discovery_working?(registry)
-      end
-    end
-
-    def self.service_discovery_working?(registry)
-      HTTParty.get(registry)
-      true
-    rescue Errno::ECONNREFUSED
-      false
     end
 
     def self.notify_service_and_run!

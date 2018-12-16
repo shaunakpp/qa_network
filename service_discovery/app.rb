@@ -14,7 +14,6 @@ module ServiceDiscovery
       enable :logging
     end
 
-
     set :wsdl_route, '/wsdl'
 
     soap 'call', in: { service: :string, service_params: {} }, out: nil do

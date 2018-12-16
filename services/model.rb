@@ -5,10 +5,9 @@ class QuestionStore < Ohm::Model
 
   index :description
   def ui_json
-    self.attributes.merge(self.to_hash)
+    attributes.merge(to_hash)
   end
 end
-
 
 class AnswerStore < Ohm::Model
   attribute :description
@@ -16,6 +15,6 @@ class AnswerStore < Ohm::Model
 
   index :description
   def ui_json
-    self.attributes.merge(self.to_hash)
+    attributes.merge(to_hash)
   end
 end
