@@ -13,7 +13,7 @@ require 'pry'
 require_relative '../utils/system_load_metrics'
 require_relative '../utils/service_discovery_checker'
 require_relative 'model'
-
+require_relative '../blockchain/block_chain'
 module Service
   class Question < Sinatra::Base
     extend ServiceDiscoveryChecker
@@ -43,6 +43,8 @@ module Service
     soap '/post_question', in: { description: :string }, out: { question: :string } do
       @question = QuestionStore.new(description: params['description'])
       @question.save
+      Blockchain.generate_new_block("QUESTION: #{@question.description}")
+      @question.attributes.merge(@question.to_hash).to_json
     end
 
     get '/' do
@@ -61,6 +63,8 @@ module Service
     get '/post_question' do
       @question = QuestionStore.new(description: params['description'])
       @question.save
+      @question.save
+      Blockchain.generate_new_block("QUESTION: #{@question.description}")
       @question.attributes.merge(@question.to_hash).to_json
     end
 

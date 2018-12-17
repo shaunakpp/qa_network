@@ -12,7 +12,7 @@ require 'httparty'
 require 'pry'
 require_relative '../utils/system_load_metrics'
 require_relative '../utils/service_discovery_checker'
-require_relative 'block'
+require_relative 'block_chain'
 
 module Blockchain
   class Application < Sinatra::Base
@@ -33,18 +33,13 @@ module Blockchain
     end
 
     get '/blocks' do
-
+      @block_chain = Blockchain.block_chain.collect { |x| x.ui_json }
+      erb :layout, layout: false do
+        erb :index
+      end
     end
 
     get '/mine_block' do
-
-    end
-
-    get '/peers' do
-
-    end
-
-    get '/add_peers' do
 
     end
 

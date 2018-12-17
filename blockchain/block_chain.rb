@@ -1,29 +1,30 @@
 require_relative 'validator'
 require_relative 'block'
 require_relative 'resolver'
-GENESIS_BLOCK = Block.new(0, '', Time.now.to_i, 'Genesis block', 0)
+require 'pry'
+unless Block.find(number: 0).first
+  GENESIS_BLOCK = Block.new(number: 0, previous_hash: '', timestamp: Time.now.to_i, data: 'Genesis block', difficulty: 0, nonce: 0)
+  GENESIS_BLOCK.calculate_hash
+  GENESIS_BLOCK.save
+end
 
 GENERATION_INTERVAL = 10
 DIFFICULTY_ADJUSTMENT_INTERVAL = 10
 
 module Blockchain
   def self.block_chain
-    @chain
-  end
-
-  def self.block_chain=(chain)
-    @chain = chain
+    Block.all.sort(&:number)
   end
 
   def self.generate_new_block(data)
     previous_block = get_latest_block
     difficulty = get_difficulty
     block = find_block(previous_block.number + 1, previous_block.current_hash, Time.now.to_i, data, difficulty)
-    block_chain.push(block) if Validator.valid_block?(block, previous_block)
+    block.save if Validator.valid_block?(block, previous_block)
   end
 
   def self.find_block(number, previous_hash, timestamp, data, difficulty)
-    block = Block.new(number, previous_hash, timestamp, data, difficulty)
+    block = Block.new(number: number, previous_hash: previous_hash, timestamp: timestamp, data: data, difficulty: difficulty, nonce: 0)
     loop do
       block.current_hash = block.calculate_hash
       if Validator.difficulty_match?(block.current_hash, difficulty)
@@ -60,5 +61,3 @@ module Blockchain
     end
   end
 end
-
-Blockchain.block_chain = [GENESIS_BLOCK]

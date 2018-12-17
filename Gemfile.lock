@@ -63,6 +63,8 @@ GEM
       nest (~> 3)
       redic (~> 1.5.0)
       stal
+    ohm-contrib (3.0.0)
+      ohm (~> 3.0)
     parallel (1.12.1)
     parser (2.5.3.0)
       ast (~> 2.4.0)
@@ -161,6 +163,7 @@ DEPENDENCIES
   httparty
   json
   ohm
+  ohm-contrib
   pry
   queryparams
   rack-contrib

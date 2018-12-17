@@ -1,29 +1,35 @@
-# require 'ohm'
+require 'ohm'
+require 'ohm/contrib'
 require 'digest'
-class Block # < Ohm::Model
-  # attribute :number
-  # attribute :hash
-  # attribute :previous_hash
-  # attribute :timestamp
-  # attribute :data
-  attr_accessor :number, :current_hash, :previous_hash, :timestamp, :data, :difficulty, :nonce
+class Block < Ohm::Model
+  include Ohm::DataTypes
 
-  def initialize(number, previous_hash, timestamp, data, difficulty, nonce = 0)
-    @number = number
-    @previous_hash = previous_hash
-    @timestamp = timestamp
-    @data = data
-    @difficulty = difficulty
-    @nonce = nonce
-    @current_hash = calculate_hash
-  end
+  attribute :number, Type::Integer
+  attribute :current_hash
+  attribute :previous_hash
+  attribute :timestamp, Type::Integer
+  attribute :type
+  attribute :data
+  attribute :difficulty, Type::Integer
+  attribute :nonce, Type::Integer
+
+  index :number
+  index :current_hash
+  index :previous_hash
+  index :data
+  index :type
 
   def calculate_hash
-    Digest::SHA256.hexdigest "#{number}#{previous_hash}#{data}#{nonce}"
+    self.current_hash = Digest::SHA256.hexdigest "#{number}#{previous_hash}#{data}#{nonce}"
   end
 
   def genesis_block?
     number.zero?
   end
+
+  def ui_json
+    attributes.merge(to_hash)
+  end
+
 end
 

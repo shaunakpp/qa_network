@@ -12,6 +12,7 @@ require 'pry'
 require_relative '../utils/system_load_metrics'
 require_relative '../utils/service_discovery_checker'
 require_relative 'model'
+require_relative '../blockchain/block_chain'
 module Service
   class Answer < Sinatra::Base
     extend ServiceDiscoveryChecker
@@ -63,6 +64,7 @@ module Service
     get '/post_answer' do
       @answer = AnswerStore.new(description: params['description'], question_id: params['question_id'])
       @answer.save
+      Blockchain.generate_new_block("ANSWER: #{@answer.description}")
       @answer.attributes.merge(@answer.to_hash).to_json
     end
 
