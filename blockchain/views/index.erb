@@ -1,0 +1,28 @@
+<table class="responsive-table highlight">
+  <thead>
+    <tr>
+      <th>Index</th>
+      <th>Data</th>
+      <th>Hash</th>
+      <th>Previous Hash</th>
+      <th>Timestamp</th>
+      <th>Difficulty</th>
+      <th>Nonce</th>
+    </tr>
+  </thead>
+
+  <tbody>
+    <% @block_chain.each do |block| %>
+      <tr>
+        <td><%=block[:number]%></td>
+        <td><%=block[:data]%></td>
+        <td><%=block[:hash]%></td>
+        <td><%=block[:previous_hash]%></td>
+        <td><%=block[:timestamp]%></td>
+        <td><%=block[:difficulty]%></td>
+        <td><%=block[:nonce]%></td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>
+<br/>
