@@ -1,7 +1,7 @@
 require 'ohm'
 require 'ohm/contrib'
 require 'digest'
-Ohm.redis = Redic.new('redis://:aos_project_123@ec2-18-209-164-156.compute-1.amazonaws.com:6379')
+Ohm.redis = Redic.new('redis://127.0.0.1:6379')
 class Block < Ohm::Model
   include Ohm::DataTypes
 
@@ -31,6 +31,5 @@ class Block < Ohm::Model
   def ui_json
     attributes.merge(to_hash)
   end
-
 end
 
