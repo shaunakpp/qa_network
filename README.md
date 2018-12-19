@@ -55,18 +55,36 @@ bundle install
 The above command will install all the necessary libraries required for this project.
 Once installation is complete, you can now run this project using following command:
 
+Run the service discovery module:
+~~~shell
+bundle exec ruby service_discovery/app.rb
+~~~
+After the above command starts the service discovery server on port 4567
+Note: It is imperative that we start the service discovery before running any other service.
+
+Then run this command:
 ~~~shell
 foreman start
 ~~~
 
-This command will start the following processes:
+This will start the following processes:
 
-1. A service discovery app on port 4567
-2. A load balancer app on port 9292
-3. A question service app on port 3003
-4. An answer service app on port 3002
+1. A load balancer app on port 9292
+2. A question service app on port 3003
+3. An answer service app on port 3002
+4. A blockchain viewer app on port 3005
+5. A client app on port 3000
 
 Note: For the demo we will be setting up these on separate machines, but by using `foreman` you can quickly set up on one machine.
 
+
+To add questions:
+
+Visit http://localhost:3000 where you can see a create question link, click it and then fill the form to create a question.
+
+
+To add an answer to a question:
+
+Click on the 'View Answers' link which will direct you to the answers page where you can create a new answer
 
 Please email spagnis1@umbc.edu in case you have any difficulty in installing. Thank you!
