@@ -1,5 +1,6 @@
-# The QA Network
-## By Shaunak Pagnis and Sumeet Menon
+# The QA Network 
+## Project for CMSC 621 Advanced Operating Systems
+### By Shaunak Pagnis and Sumeet Menon
 
 A prototype for a distributed Question and Answer based network.
 
