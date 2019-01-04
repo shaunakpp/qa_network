@@ -1,10 +1,9 @@
 require 'sinatra/base'
 require 'sinatra/contrib'
-require 'sinatra/soap'
 require_relative 'service'
+
 module ServiceDiscovery
   class Application < Sinatra::Base
-    register Sinatra::Soap
     configure do
       set :bind, '0.0.0.0'
       set :app_file, __FILE__
@@ -12,12 +11,6 @@ module ServiceDiscovery
       set :port, ENV['PORT'] || 4567
       set :host, ENV['HOST'] || 'http://localhost'
       enable :logging
-    end
-
-    set :wsdl_route, '/wsdl'
-
-    soap 'call', in: { service: :string, service_params: {} }, out: nil do
-      nil
     end
 
     get '/' do

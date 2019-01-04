@@ -8,10 +8,10 @@ unless Block.find(number: 0).first
   GENESIS_BLOCK.save
 end
 
-GENERATION_INTERVAL = 10
-DIFFICULTY_ADJUSTMENT_INTERVAL = 10
-
 module Blockchain
+  GENERATION_INTERVAL = 10
+  DIFFICULTY_ADJUSTMENT_INTERVAL = 10
+
   def self.block_chain
     Block.all.sort(&:number)
   end

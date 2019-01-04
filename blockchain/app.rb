@@ -1,24 +1,15 @@
-Kernel.at_exit do
-  # registry = Service::Question.service_discovery
-  # response = HTTParty.delete("#{registry}/service", body: { name: 'question', host: Service::Question.settings.host, port: Service::Question.settings.port })
-  # puts response.body
-  # Service::Question.quit!
-end
-
 require 'sinatra/base'
 require 'sinatra/contrib'
 require 'httparty'
-# require 'sinatra/soap'
-require 'pry'
 require_relative '../utils/system_load_metrics'
 require_relative '../utils/service_discovery_checker'
 require_relative 'block_chain'
 
 module Blockchain
   class Application < Sinatra::Base
-    set :host, ENV['HOST'] || 'http://localhost'
 
     configure do
+      set :host, ENV['HOST'] || 'http://localhost'
       set :bind, '0.0.0.0'
       set :app_file, __FILE__
       set :run, false
